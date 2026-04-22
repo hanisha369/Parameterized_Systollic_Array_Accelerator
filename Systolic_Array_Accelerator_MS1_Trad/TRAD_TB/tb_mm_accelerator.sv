@@ -172,6 +172,62 @@ task automatic run_test(
                 $display("  FAIL \u2014 %0d mismatches", errors);
 
 endtask
+// Test stimulus
+
+logic [DATA_WIDTH-1:0] A [N][N];
+logic [DATA_WIDTH-1:0] B [N][N];
+
+initial begin
+        // TEST 1  All-zeros
+        // Expected result: all zeros
+        
+        foreach (A[i,j]) A[i][j] = '0;
+        foreach (B[i,j]) B[i][j] = '0;
+        run_test("All-Zeros", A, B);
+
+        
+        // TEST 2  Identity x Identity
+        // Expected result: Identity matrix
+        
+        foreach (A[i,j]) A[i][j] = (i == j) ? 8'd1 : 8'd0;
+        foreach (B[i,j]) B[i][j] = (i == j) ? 8'd1 : 8'd0;
+        run_test("Identity x Identity", A, B);
+
+        
+        // TEST 3  All-ones
+        // Expected result: every element = N
+        
+        foreach (A[i,j]) A[i][j] = 8'd1;
+        foreach (B[i,j]) B[i][j] = 8'd1;
+        run_test("All-Ones", A, B);
+
+        
+        // TEST 4 Known random values (hand-verifiable via ref model)
+        // A and B filled with small known values, ref_model computes gold
+        
+        A[0] = '{8'd1,  8'd2,  8'd3,  8'd4 };
+        A[1] = '{8'd5,  8'd6,  8'd7,  8'd8 };
+        A[2] = '{8'd9,  8'd10, 8'd11, 8'd12};
+        A[3] = '{8'd13, 8'd14, 8'd15, 8'd16};
+
+        B[0] = '{8'd2,  8'd0,  8'd1,  8'd0 };
+        B[1] = '{8'd0,  8'd2,  8'd0,  8'd1 };
+        B[2] = '{8'd1,  8'd0,  8'd2,  8'd0 };
+        B[3] = '{8'd0,  8'd1,  8'd0,  8'd2 };
+        run_test("Known Random Values", A, B);
+
+        
+        $display("\n========================================");
+        $display("All tests complete");
+        $display("========================================\n");
+        $finish;
+end
+
+initial begin
+        #(CLK_PERIOD * 10000);
+        $display("TIMEOUT  simulation exceeded maximum cycle count");
+        $finish;
+end
 
 initial begin
     $fsdbDumpfile("novas.fsdb");
